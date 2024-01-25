@@ -1,0 +1,33 @@
+name: CI-build_and_deploy-site
+
+env:
+  IMAGE_NAME: ntlg-dplm
+  TAG: github.run_number
+
+on:
+  push:
+    branches:
+    - main
+    tags:
+    - '*'
+    
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    
+    - name: Set env
+      run: echo "TAG=$(echo $github.tag)" >> $GITHUB_ENV
+      if: github.tag != ''
+      
+    - name: Build the Docker image
+    - uses: actions/checkout@v3
+    - run: docker build . --file Dockerfile --tag ${{ IMAGE_NAME }}:${{ TAG }}
+      
+    - name: Push the Docker image
+    - uses: actions/checkout@v3
+    - run: docker login --username ${{ DOCKER_USERNAME }} --password ${{ DOCKER_PASSWORD }}
+    - run: docker push ${{ IMAGE_NAME }}:${{ TAG }}
