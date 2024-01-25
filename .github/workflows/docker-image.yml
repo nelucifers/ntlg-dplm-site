@@ -27,9 +27,9 @@ jobs:
       if: github.tag != ''
       
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag ${{ IMAGE_NAME }}:${{ TAG }}
+      run: docker build . --file Dockerfile --tag ${{ env.IMAGE_NAME }}:${{ env.TAG }}
       
     - name: Push the Docker image
       run: |
-        docker login --username ${{ DOCKER_USERNAME }} --password ${{ DOCKER_PASSWORD }}
-        docker push ${{ IMAGE_NAME }}:${{ TAG }}
+        docker login --username ${{ secrets.DOCKER_USERNAME }} --password ${{ secrets.DOCKER_PASSWORD }}
+        docker push ${{ env.IMAGE_NAME }}:${{ env.TAG }}
