@@ -19,6 +19,9 @@ jobs:
 
     steps:
     
+    - name: Echo test
+      run: echo "Text Hello"
+    
     - name: Get files
       uses: actions/checkout@v3
     
