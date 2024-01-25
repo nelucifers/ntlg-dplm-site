@@ -19,15 +19,17 @@ jobs:
 
     steps:
     
+    - name: Get files
+      uses: actions/checkout@v3
+    
     - name: Set env
       run: echo "TAG=$(echo $github.tag)" >> $GITHUB_ENV
       if: github.tag != ''
       
     - name: Build the Docker image
-    - uses: actions/checkout@v3
-    - run: docker build . --file Dockerfile --tag ${{ IMAGE_NAME }}:${{ TAG }}
+      run: docker build . --file Dockerfile --tag ${{ IMAGE_NAME }}:${{ TAG }}
       
     - name: Push the Docker image
-    - uses: actions/checkout@v3
-    - run: docker login --username ${{ DOCKER_USERNAME }} --password ${{ DOCKER_PASSWORD }}
-    - run: docker push ${{ IMAGE_NAME }}:${{ TAG }}
+      run: |
+        docker login --username ${{ DOCKER_USERNAME }} --password ${{ DOCKER_PASSWORD }}
+        docker push ${{ IMAGE_NAME }}:${{ TAG }}
