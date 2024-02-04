@@ -3,7 +3,7 @@ name: CI-build_and_deploy-site
 env:
   IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/ntlg-dplm
   TAG: ${{ github.run_number }}
-  FILE: environments/default.libsonnet
+  FILE: ./environments/default.libsonnet
   VARS_APP_REPO: ${{ vars.APP_REPO }}
   
 on:
@@ -44,8 +44,8 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         port: ${{ secrets.SSH_PORT }}
         script: |
-          rm -rf web-app
-          git clone ${{ env.VARS_APP_REPO }} web-app
-          cd web-app
+          rm -rf ./web-app*
+          git clone ${{ env.VARS_APP_REPO }} ./web-app-${{ env.TAG }}
+          cd ./web-app
           sed 's/image: .*,/image: "${{ env.IMAGE_NAME }}\:${{ env.TAG }}",/' ${{ env.FILE }} > ${{ env.FILE }}
           qbec apply default --yes
