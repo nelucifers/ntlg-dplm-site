@@ -37,7 +37,7 @@ jobs:
         docker login --username ${{ secrets.DOCKER_USERNAME }} --password ${{ secrets.DOCKER_PASSWORD }}
         docker push ${{ env.IMAGE_NAME }}:${{ env.TAG }}
         
-    - name: Update application
+    - name: 1 Update application
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.SSH_HOST }}
@@ -46,7 +46,7 @@ jobs:
         port: ${{ secrets.SSH_PORT }}
         script: rm -rf ./${{ env.REPO_DIR}}*
         
-    - name: Update application
+    - name: 2 Update application
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.SSH_HOST }}
@@ -55,7 +55,7 @@ jobs:
         port: ${{ secrets.SSH_PORT }}
         script: git clone ${{ env.VARS_APP_REPO }} ./${{ env.REPO_DIR}}-${{ env.TAG }}
 
-    - name: Update application
+    - name: 3 Update application
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.SSH_HOST }}
@@ -64,23 +64,9 @@ jobs:
         port: ${{ secrets.SSH_PORT }}
         script: |
           cd ./${{ env.REPO_DIR}}-${{ env.TAG }}
-          sed 's/image: .*,/image: "${{ env.IMAGE_NAME }}\:${{ env.TAG }}",/' ${{ env.FILE }} > ${{ env.FILE }}
+          sed -i 's|image: .*,|image: "${{ env.IMAGE_NAME }}\:${{ env.TAG }}",|' ${{ env.FILE }}
 
-    - name: Update application
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USERNAME }}
-        key: ${{ secrets.SSH_KEY }}
-        port: ${{ secrets.SSH_PORT }}
-        script: |
-          rm -rf ./${{ env.REPO_DIR}}*
-          git clone ${{ env.VARS_APP_REPO }} ./${{ env.REPO_DIR}}-${{ env.TAG }}
-          cd ./${{ env.REPO_DIR}}-${{ env.TAG }}
-          sed --expression "s@image: .*,@image: '${{ env.IMAGE_NAME }}\:${{ env.TAG }}',@" ${{ env.FILE }} > ${{ env.FILE }}
-          qbec apply default --yes
-
-    - name: Update application
+    - name: 4 Update application
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.SSH_HOST }}
