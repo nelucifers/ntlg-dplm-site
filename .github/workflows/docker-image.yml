@@ -37,25 +37,7 @@ jobs:
         docker login --username ${{ secrets.DOCKER_USERNAME }} --password ${{ secrets.DOCKER_PASSWORD }}
         docker push ${{ env.IMAGE_NAME }}:${{ env.TAG }}
         
-    - name: 1 Update application
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USERNAME }}
-        key: ${{ secrets.SSH_KEY }}
-        port: ${{ secrets.SSH_PORT }}
-        script: rm -rf ./${{ env.REPO_DIR}}*
-        
-    - name: 2 Update application
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USERNAME }}
-        key: ${{ secrets.SSH_KEY }}
-        port: ${{ secrets.SSH_PORT }}
-        script: git clone ${{ env.VARS_APP_REPO }} ./${{ env.REPO_DIR}}-${{ env.TAG }}
-
-    - name: 3 Update application
+    - name: Update application
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.SSH_HOST }}
@@ -63,15 +45,9 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         port: ${{ secrets.SSH_PORT }}
         script: |
-          cd ./${{ env.REPO_DIR}}-${{ env.TAG }}
+          rm -rf ./${{ env.REPO_DIR}}
+          git clone ${{ env.VARS_APP_REPO }} ./${{ env.REPO_DIR}}
+          cd ./${{ env.REPO_DIR}}
           sed -i 's|image: .*,|image: "${{ env.IMAGE_NAME }}\:${{ env.TAG }}",|' ${{ env.FILE }}
-
-    - name: 4 Update application
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USERNAME }}
-        key: ${{ secrets.SSH_KEY }}
-        port: ${{ secrets.SSH_PORT }}
-        script: qbec apply default --yes
+          qbec apply default --yes
         
