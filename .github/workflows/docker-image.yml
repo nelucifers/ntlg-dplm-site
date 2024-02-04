@@ -1,0 +1,53 @@
+name: CI-build_and_deploy-site
+
+env:
+  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/ntlg-dplm
+  TAG: ${{ github.run_number }}
+  FILE: ./environments/default.libsonnet
+  VARS_APP_REPO: ${{ vars.APP_REPO }}
+  REPO_DIR: web-app
+  
+on:
+  push:
+    branches:
+    - main
+    tags:
+    - '*'
+    
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    
+    - name: Get files
+      uses: actions/checkout@v3
+      
+    - name: Set env TAG
+      run: echo "TAG=$(echo ${GITHUB_REF:10})" >> $GITHUB_ENV
+      if: startsWith(github.ref, 'refs/tags/v')
+      
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag ${{ env.IMAGE_NAME }}:${{ env.TAG }}
+    
+    - name: Push the Docker image
+      run: |
+        docker login --username ${{ secrets.DOCKER_USERNAME }} --password ${{ secrets.DOCKER_PASSWORD }}
+        docker push ${{ env.IMAGE_NAME }}:${{ env.TAG }}
+        
+    - name: Update application
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        script: |
+          rm -rf ./${{ env.REPO_DIR}}
+          git clone ${{ env.VARS_APP_REPO }} ./${{ env.REPO_DIR}}
+          cd ./${{ env.REPO_DIR}}
+          sed -i 's|image: .*,|image: "${{ env.IMAGE_NAME }}\:${{ env.TAG }}",|' ${{ env.FILE }}
+          qbec apply default --yes
+        
