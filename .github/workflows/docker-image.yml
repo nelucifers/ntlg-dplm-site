@@ -45,7 +45,7 @@ jobs:
         port: ${{ secrets.SSH_PORT }}
         script: |
           rm -rf web-app
-          git clone ${{ VARS_APP_REPO }} web-app
+          git clone ${{ env.VARS_APP_REPO }} web-app
           cd web-app
           sed 's/image: .*,/image: "${{ env.IMAGE_NAME }}\:${{ env.TAG }}",/' ${{ env.FILE }} > ${{ env.FILE }}
           qbec apply default --yes
