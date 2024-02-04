@@ -77,7 +77,7 @@ jobs:
           rm -rf ./${{ env.REPO_DIR}}*
           git clone ${{ env.VARS_APP_REPO }} ./${{ env.REPO_DIR}}-${{ env.TAG }}
           cd ./${{ env.REPO_DIR}}-${{ env.TAG }}
-          sed 's/image: .*,/image: "${{ env.IMAGE_NAME }}\:${{ env.TAG }}",/' ${{ env.FILE }} > ${{ env.FILE }}
+          sed 's|image: .*,|image: "${{ env.IMAGE_NAME }}\:${{ env.TAG }}",|' ${{ env.FILE }} > ${{ env.FILE }}
           qbec apply default --yes
 
     - name: Update application
