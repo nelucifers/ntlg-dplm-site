@@ -5,6 +5,7 @@ env:
   TAG: ${{ github.run_number }}
   FILE: ./environments/default.libsonnet
   VARS_APP_REPO: ${{ vars.APP_REPO }}
+  REPO_DIR: web-app
   
 on:
   push:
@@ -43,9 +44,48 @@ jobs:
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_KEY }}
         port: ${{ secrets.SSH_PORT }}
+        script: rm -rf ./${{ env.REPO_DIR}}*
+        
+    - name: Update application
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        script: git clone ${{ env.VARS_APP_REPO }} ./${{ env.REPO_DIR}}-${{ env.TAG }}
+
+    - name: Update application
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT }}
         script: |
-          rm -rf ./web-app*
-          git clone ${{ env.VARS_APP_REPO }} ./web-app-${{ env.TAG }}
-          cd ./web-app
+          cd ./${{ env.REPO_DIR}}-${{ env.TAG }}
+          sed 's/image: .*,/image: "${{ env.IMAGE_NAME }}\:${{ env.TAG }}",/' ${{ env.FILE }} > ${{ env.FILE }}
+
+    - name: Update application
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        script: |
+          rm -rf ./${{ env.REPO_DIR}}*
+          git clone ${{ env.VARS_APP_REPO }} ./${{ env.REPO_DIR}}-${{ env.TAG }}
+          cd ./${{ env.REPO_DIR}}-${{ env.TAG }}
           sed 's/image: .*,/image: "${{ env.IMAGE_NAME }}\:${{ env.TAG }}",/' ${{ env.FILE }} > ${{ env.FILE }}
           qbec apply default --yes
+
+    - name: Update application
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        script: qbec apply default --yes
+        
