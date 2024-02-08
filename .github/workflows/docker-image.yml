@@ -39,11 +39,13 @@ jobs:
 
 
   deploy:
-
+    
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
 
     steps:
-    
+
     - name: Update application
       uses: appleboy/ssh-action@v1.0.3
       with:
@@ -57,4 +59,3 @@ jobs:
           cd ./${{ env.REPO_DIR}}
           echo "${{ env.TAG }}" > ${{ env.FILE_TAG }}
           qbec apply default --yes
-      if: startsWith(github.ref, 'refs/tags/v')
