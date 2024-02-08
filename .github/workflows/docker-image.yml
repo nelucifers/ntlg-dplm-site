@@ -50,7 +50,7 @@ jobs:
 
     - name: Update application
       env:
-        TAG: ${{ needs.build.outputs.image_tag }}
+        tag: ${{ needs.build.outputs.image_tag }}
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.SSH_HOST }}
@@ -61,5 +61,5 @@ jobs:
           rm -rf ./${{ env.REPO_DIR}}
           git clone ${{ env.VARS_APP_REPO }} ./${{ env.REPO_DIR}}
           cd ./${{ env.REPO_DIR}}
-          echo "${{ TAG }}" > ${{ env.FILE_TAG }}
+          echo "${{ tag }}" > ${{ env.FILE_TAG }}
           qbec apply default --yes
