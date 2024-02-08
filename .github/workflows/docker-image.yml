@@ -61,5 +61,5 @@ jobs:
           rm -rf ./${{ env.REPO_DIR}}
           git clone ${{ env.VARS_APP_REPO }} ./${{ env.REPO_DIR}}
           cd ./${{ env.REPO_DIR}}
-          echo "${{ tag }}" > ${{ env.FILE_TAG }}
+          echo "${{ env.tag }}" > ${{ env.FILE_TAG }}
           qbec apply default --yes
